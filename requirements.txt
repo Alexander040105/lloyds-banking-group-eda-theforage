@@ -1,0 +1,10 @@
+scikit-learn
+jupyter
+matplotlib
+pandas
+plotly
+requests
+numpy
+notebook
+ipykernel
+openpyxl
