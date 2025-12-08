@@ -10,3 +10,5 @@ ipykernel
 openpyxl
 seaborn
 xgboost
+joblib
+caas_jupyter_tools
