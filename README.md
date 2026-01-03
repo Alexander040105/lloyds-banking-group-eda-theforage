@@ -1,4 +1,3 @@
-
 # Customer Churn Analysis – Data Preparation & EDA
 
 ## 📌 Introduction
@@ -32,118 +31,125 @@ The analysis uses multiple datasets, each providing different behavioral and dem
 
 1. **Data Merging**
 
-   - All datasets merged on `CustomerID` using a **left join** onto demographics.
-   - Aggregated transactional and service logs (e.g., first/last transaction dates, total spend, transaction counts).
-2. **Date Handling**
+# Customer Churn Analysis — Lloyds Banking Group (EDA, Prep & Modelling)
 
-   - Converted date columns to `datetime`.
-   - Used the **max TransactionDate** in the dataset as a reference to compute *RecencyDays*.
-3. **Feature Engineering**
-   Created key features for churn modeling:
+## Overview
 
-| Feature Name                 | Description                              |
-| ---------------------------- | ---------------------------------------- |
-| `FirstTransactionDate`     | Start of customer relationship.          |
-| `LastTransactionDate`      | Most recent purchase date.               |
-| `TotalAmountSpent`         | Lifetime spending.                       |
-| `AvgAmountPerTransaction`  | Spending style metric.                   |
-| `TransactionCount`         | Purchase frequency.                      |
-| `TotalServiceInteractions` | Volume of customer service interactions. |
-| `ServiceDiversity`         | Variety of service channels used.        |
-| `RecencyDays`              | Days since last purchase.                |
-| `TenureDays`               | Relationship length.                     |
-| `DaysSinceLastLogin`       | Online engagement measure.               |
+This repository contains a complete end-to-end preparation and exploratory analysis of customer data aimed at building a churn prediction model for Lloyds Banking Group. The work merges demographics, transactions, service interactions and online activity; engineers features; runs EDA; and evaluates classification models to identify customers at risk of churn.
 
-4. **Missing Value Treatment**
+Goals:
 
-   - Counts (e.g., service interactions) → filled with `0`.
-   - Dates → filled with proxies (e.g., `LastLoginDate` if `LastInteractionDate` missing).
-   - Numeric columns → filled with median values.
-5. **Outlier Treatment & Scaling**
-
-   - **Winsorized** `TotalAmountSpent` and `TransactionCount` at the 99th percentile.
-   - **One-hot encoded** categorical features (e.g., marital status, gender, income level).
-   - **StandardScaler** applied to numeric features; scaler saved for consistency.
+- Produce a cleaned, feature-engineered dataset ready for modelling.
+- Identify behavioral and demographic signals correlated with churn.
+- Train and evaluate classification models and surface actionable recommendations for retention.
 
 ---
 
-## 📊 EDA Highlights
+## Data sources
 
-### Churn Distribution
+The analysis combines these inputs:
 
-![Churn Distribution](./churn_status_distribution.png)
+- `Customer_Demographics` — personal attributes.
+- `Transaction_History` — transaction dates & amounts (used to compute recency, tenure, lifetime spend).
+- `Customer_Service` — support interaction records (counts & types).
+- `Online_Activity` — login frequency and recent online engagement.
+- `Churn_Status` — binary target (0 = active, 1 = churned).
 
-Balanced churn rate allows for fair investigation into retention and attrition factors.
-
-### Customer Age Profile
-
-![Customer Age Profile](./customer_age_distribution.png)
-
-Majority between **25–44 years old** — indicates strong appeal in this demographic but opportunity to expand reach.
-
-### Spending by Age
-
-![Spending Average by Age](./totalaverage_amount_spent_agerange.png)
-
-Ages **35–54** spend more on average — ideal targets for loyalty and upsell campaigns.
-
-### Channel Usage Patterns
-
-![Client Interaction by Type](./customer_interactions_by_type.png)
-
-Some service channels dominate — prioritize these while improving underutilized ones.
-
-### Recency vs. Total Amount Spent
-
-![Recency vs Spending](recency_total_amount_spent.png)
-
-- High spenders tend to have **low RecencyDays**.
-- Higher recency + low spending aligns with churn risk.
-
-### Total Spending by Churn Status
-
-![Total Spending Boxplot](total_amount_spent_boxplot.png)
-
-- Non-churned customers have higher median spend.
-- Lower spending is a potential churn signal.
-
-### Correlation Insights
-
-![Correlation Heatmap](correlation_heatma.png)
-
-- Strong positive correlation: **TotalAmountSpent** ↔ **TransactionCount**.
-- **RecencyDays** negatively correlates with spending and transactions.
+These sources provide complementary behavioral and demographic signals used throughout the analysis and modelling pipeline.
 
 ---
 
-## 📁 Files Produced
+## Processing & feature engineering
 
-- **`customer_churn_analysis_cleaned.csv`** — Cleaned, feature-engineered, encoded, and scaled dataset ready for modeling.
-- **`numeric_scaler.save`** — `StandardScaler` object for consistent preprocessing.
+Key steps applied to the raw data:
 
----
+- Merged datasets on `CustomerID` (left join onto demographics) and aggregated logs (first/last dates, counts, totals).
+- Converted date columns to `datetime` and used the dataset's max transaction date as the recency reference.
+- Created features: `FirstTransactionDate`, `LastTransactionDate`, `TotalAmountSpent`, `AvgAmountPerTransaction`, `TransactionCount`, `TotalServiceInteractions`, `ServiceDiversity`, `RecencyDays`, `TenureDays`, `DaysSinceLastLogin`.
+- Missing values: counts → `0`; date proxies used where appropriate; numerics → median imputation.
+- Outliers: capped (`winsorized`) `TotalAmountSpent` and `TransactionCount` at the 99th percentile.
+- Encoding & scaling: categorical variables one-hot encoded; numeric features standardized with `StandardScaler`. The scaler is saved as `numeric_scaler.save` for consistent preprocessing.
 
-## ✅ Conclusion & Next Steps
-
-The dataset is fully prepared for model training.Next steps:
-
-1. Build classification models.
-2. Tune hyperparameters.
-3. Run **SHAP explainability** to guide retention strategies.
+Produced dataset: `customer_churn_analysis_cleaned.csv` (ready for modelling).
 
 ---
 
-## 📌 Data Pipeline Diagram
+## Exploratory Data Analysis — key insights
 
-```mermaid
-graph TD
-    A[Raw Data Sources] --> B[Merge on CustomerID]
-    B --> C[Aggregate Transaction & Service Logs]
-    C --> D[Date Conversion & Recency Calculation]
-    D --> E[Feature Engineering]
-    E --> F[Missing Value Treatment]
-    F --> G[Outlier Handling]
-    G --> H[Encoding & Scaling]
-    H --> I[EDA & Visualization]
-    I --> J[Model Training]
+Visuals are available in `phaseOne/phase1_charts/` and embedded below.
+
+- Churn distribution: balanced enough to compare modelling approaches.
+  ![Churn Distribution](phaseOne/phase1_charts/churn_status_distribution.png)
+- Age profile: most customers are aged 25–44; ages 35–54 demonstrate higher average spend (priority targets).
+  ![Age Distribution](phaseOne/phase1_charts/customer_age_distribution.png)
+- Spending by age: 35–54 shows highest average spend — useful for targeted offers.
+  ![Spending Average by Age](phaseOne/phase1_charts/totalaverage_amount_spent_agerange.png)
+- Service-channel usage: certain channels dominate; consider reinforcing preferred channels and improving underused ones.
+  ![Client Interaction by Type](phaseOne/phase1_charts/customer_interactions_by_type.png)
+- Recency vs spending: high spenders generally have low `RecencyDays`; high recency + low spend indicates churn risk.
+  ![Recency vs Spending](phaseOne/phase1_charts/recency_total_amount_spent.png)
+- Spending by churn status: non-churn customers show higher median spend and transaction counts.
+  ![Total Spending Boxplot](phaseOne/phase1_charts/total_amount_spent_boxplot.png)
+- Correlations: `TotalAmountSpent` and `TransactionCount` are strongly positively correlated; `RecencyDays` negatively correlates with spending/transactions.
+  ![Correlation Heatmap](phaseOne/phase1_charts/correlation_heatma.png)
+
+EDA conclusion: recency, total spend and transaction frequency are among the strongest early-warning signals for churn. Demographic segments (age/income) help prioritise interventions.
+
+---
+
+## Modelling approach & results
+
+Class imbalance handling:
+
+- Applied SMOTE (oversampling minority) then random undersampling of the majority class (imbalanced-learn) to create a more balanced training set. Splits were stratified to preserve distribution.
+
+Algorithms evaluated:
+
+- Random Forest (class weights balanced)
+- Support Vector Machine (SVM) with probability estimates
+- XGBoost (tuned with scale_pos_weight and depth)
+
+Key metrics for the churn (positive) class:
+
+| Model         | Precision | Recall | F1-score | ROC-AUC | Notes                                                                                        |
+| ------------- | --------: | -----: | -------: | ------: | -------------------------------------------------------------------------------------------- |
+| Random Forest |      0.19 |   0.68 |     0.30 |    0.35 | High recall, many false positives — useful for catch-all screening.                         |
+| SVM           |      0.22 |   0.56 |     0.32 |    0.46 | Best-balanced performance and highest ROC-AUC in this evaluation — chosen as primary model. |
+| XGBoost       |      0.16 |   0.37 |     0.23 |    0.44 | Underperformed on recall; may benefit from further tuning and feature work.                  |
+
+Evaluation summary: Random Forest maximises recall at the expense of precision; SVM offers the best operational balance and was selected as the recommended primary model for deployment.
+
+---
+
+## Recommendations & business actions
+
+- Deploy SVM in a production scoring pipeline to flag at-risk customers for retention outreach.
+- Use SHAP explainability on the chosen model to identify top drivers and create targeted interventions (e.g., offers for low-spend, high-recency customers).
+- Consider a two-stage operational flow: (1) high-recall model or rule set to shortlist candidates; (2) higher-precision model or rules to prioritise outreach to the best targets.
+- Monitor precision/recall over time and retrain frequently with new data; track lift on retention campaigns to validate model ROI.
+
+---
+
+## Files produced
+
+- `customer_churn_analysis_cleaned.csv` — cleaned, feature-engineered dataset for modelling.
+- `numeric_scaler.save` — `StandardScaler` object for consistent preprocessing.
+- Visualizations: `phaseOne/phase1_charts/` (several PNGs used above).
+
+---
+
+## Quick start
+
+1. Open the notebooks in `phaseOne/` for EDA and preprocessing steps (notebooks contain the exact code used to generate the cleaned dataset and charts).
+2. To retrain models locally, ensure dependencies (pandas, scikit-learn, xgboost, imbalanced-learn) are installed and run the model notebook in `phaseTwo/`.
+
+Example (PowerShell):
+
+```powershell
+# create venv
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt  # create if you want to capture deps
 ```
+
+---
